@@ -1,0 +1,29 @@
+.grid {
+  height: 100%;
+  width: 100%;
+  padding: 2rem;
+  background-color: white;
+  color: blueviolet;
+  border: 1px solid salmon;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+.grid-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.grid-square,
+.hidden {
+  background-color: greenyellow;
+  height: 100px;
+  width: 100px;
+  border-radius: 1rem;
+}
+.hidden {
+  visibility: hidden;
+}
