@@ -14,17 +14,21 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
   );
 
   useEffect(() => {
-    console.log("a", clickedElements);
+    let interval;
+    if (clickedElements.length === getSquareCounts) {
+      interval = setInterval(() => {}, 300);
+    }
   }, [clickedElements]);
-  const handleClick = (rowIdx: number, colIdx: number) => {
-    // console.log(clickedElements.length, getSquareCounts);
-
+  const handleClick = (rowIdx: number, colIdx: number, e: React.MouseEvent) => {
     const index = clickedElements.findIndex(
       (val) => val.rowIdx === rowIdx && val.colIdx === colIdx
     );
     if (index !== -1) {
       console.log("Element Already Clicked");
     } else {
+      console.log(e.target);
+      const target = e.target as HTMLElement;
+      target.classList.add("clicked");
       setClickedElements([...clickedElements, { rowIdx, colIdx }]);
     }
   };
@@ -38,7 +42,7 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
                 return val === 1 ? (
                   <div
                     className="grid-square"
-                    onClick={() => handleClick(rowIndex, colIndex)}
+                    onClick={(e) => handleClick(rowIndex, colIndex, e)}
                     key={colIndex}
                   ></div>
                 ) : (
