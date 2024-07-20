@@ -1,18 +1,31 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./GridLight.css";
 
 type numberArr = number[];
+interface ClickedSquares {
+  rowIdx: number;
+  colIdx: number;
+}
 function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
-  const [clickedElements, setClickedElements] = useState<numberArr[]>([]);
+  const [clickedElements, setClickedElements] = useState<ClickedSquares[]>([]);
   const getSquareCounts = useMemo(
     () => GRID_CONFIG.flat().reduce((acc, ele) => acc + ele, 0),
     [GRID_CONFIG]
   );
 
-  console.log(getSquareCounts);
-
+  useEffect(() => {
+    console.log("a", clickedElements);
+  }, [clickedElements]);
   const handleClick = (rowIdx: number, colIdx: number) => {
-    if (clickedElements[rowIdx][colIdx]) {
+    // console.log(clickedElements.length, getSquareCounts);
+
+    const index = clickedElements.findIndex(
+      (val) => val.rowIdx === rowIdx && val.colIdx === colIdx
+    );
+    if (index !== -1) {
+      console.log("Element Already Clicked");
+    } else {
+      setClickedElements([...clickedElements, { rowIdx, colIdx }]);
     }
   };
   return (
