@@ -7,6 +7,7 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
     GRID_CONFIG.map((row) => [...row])
   );
   const [sequence, setSequence] = useState<numberArr[]>([]);
+  const [count, setCount] = useState<number>(0);
   const getSquareCounts = useMemo(
     () => GRID_CONFIG.flat().reduce((acc, ele) => acc + ele, 0),
     [GRID_CONFIG]
@@ -14,23 +15,21 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
 
   useEffect(() => {
     let interval;
-    const getClickedCount = clickedElements.flat().reduce((acc, ele) => {
-      return ele === 2 ? acc + 1 : acc;
-    }, 0);
-    if (getClickedCount === getSquareCounts) {
+    if (count === getSquareCounts) {
       interval = setInterval(() => {
         console.log(sequence, sequence.length);
-        if (sequence.length) {
+        if (sequence.length > 0) {
           const resetGrid = clickedElements.map((row) => [...row]);
           const updatedSequence = sequence.map((row) => [...row]);
           const lastSquare = updatedSequence.pop();
-          resetGrid[lastSquare[0]][lastSquare[1]] = 1;
+          if (lastSquare?.length === 2)
+            resetGrid[lastSquare[0]][lastSquare[1]] = 1;
           setSequence(updatedSequence);
           setClickedElements(resetGrid);
         } else {
+          setCount(0);
           clearInterval(interval);
         }
-        // console.log("interval started");
       }, 300);
     }
   }, [clickedElements]);
@@ -42,6 +41,7 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
       const updatedSequence = sequence.map((row) => [...row]);
       updatedGrid[rowIdx][colIdx] = 2;
       updatedSequence.push([rowIdx, colIdx]);
+      setCount((count) => count + 1);
       setSequence(updatedSequence);
       setClickedElements(updatedGrid);
     }
