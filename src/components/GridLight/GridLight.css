@@ -19,12 +19,14 @@
 }
 .grid-square,
 .hidden {
-  background-color: greenyellow;
   height: 100px;
   width: 100px;
   border-radius: 1rem;
 }
-.clicked {
+.green {
+  background-color: greenyellow;
+}
+.brown {
   background-color: chocolate;
 }
 .hidden {

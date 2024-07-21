@@ -2,12 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import "./GridLight.css";
 
 type numberArr = number[];
-interface ClickedSquares {
-  rowIdx: number;
-  colIdx: number;
-}
 function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
-  const [clickedElements, setClickedElements] = useState<ClickedSquares[]>([]);
+  const [clickedElements, setClickedElements] = useState<numberArr[]>(
+    GRID_CONFIG.map((row) => [...row])
+  );
+  const [sequence, setSequence] = useState<numberArr[]>([]);
   const getSquareCounts = useMemo(
     () => GRID_CONFIG.flat().reduce((acc, ele) => acc + ele, 0),
     [GRID_CONFIG]
@@ -15,33 +14,48 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
 
   useEffect(() => {
     let interval;
-    if (clickedElements.length === getSquareCounts) {
-      interval = setInterval(() => {}, 300);
+    const getClickedCount = clickedElements.flat().reduce((acc, ele) => {
+      return ele === 2 ? acc + 1 : acc;
+    }, 0);
+    if (getClickedCount === getSquareCounts) {
+      interval = setInterval(() => {
+        console.log(sequence, sequence.length);
+        if (sequence.length) {
+          const resetGrid = clickedElements.map((row) => [...row]);
+          const updatedSequence = sequence.map((row) => [...row]);
+          const lastSquare = updatedSequence.pop();
+          resetGrid[lastSquare[0]][lastSquare[1]] = 1;
+          setSequence(updatedSequence);
+          setClickedElements(resetGrid);
+        } else {
+          clearInterval(interval);
+        }
+        // console.log("interval started");
+      }, 300);
     }
   }, [clickedElements]);
   const handleClick = (rowIdx: number, colIdx: number, e: React.MouseEvent) => {
-    const index = clickedElements.findIndex(
-      (val) => val.rowIdx === rowIdx && val.colIdx === colIdx
-    );
-    if (index !== -1) {
+    if (clickedElements[rowIdx][colIdx] === 2) {
       console.log("Element Already Clicked");
     } else {
-      console.log(e.target);
-      const target = e.target as HTMLElement;
-      target.classList.add("clicked");
-      setClickedElements([...clickedElements, { rowIdx, colIdx }]);
+      const updatedGrid = clickedElements.map((row) => [...row]);
+      const updatedSequence = sequence.map((row) => [...row]);
+      updatedGrid[rowIdx][colIdx] = 2;
+      updatedSequence.push([rowIdx, colIdx]);
+      setSequence(updatedSequence);
+      setClickedElements(updatedGrid);
     }
   };
   return (
     <div className="grid">
-      {GRID_CONFIG &&
-        GRID_CONFIG.map((ele: numberArr, rowIndex: number) => {
+      {clickedElements &&
+        clickedElements.map((ele: numberArr, rowIndex: number) => {
           return (
             <div className="grid-row" key={rowIndex}>
               {ele.map((val: number, colIndex: number) => {
-                return val === 1 ? (
+                return val === 1 || val === 2 ? (
                   <div
-                    className="grid-square"
+                    className={`grid-square ${val === 1 ? "green" : "brown"}`}
                     onClick={(e) => handleClick(rowIndex, colIndex, e)}
                     key={colIndex}
                   ></div>
