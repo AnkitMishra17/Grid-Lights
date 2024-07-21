@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import "./GridLight.css";
 
-type numberArr = number[];
-function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
-  const [clickedElements, setClickedElements] = useState<numberArr[]>(
+type GridConfig = number[][];
+type Coordinate = [number, number];
+const DEACTIVATION_INTERVAL = 300;
+
+function GridLight({ GRID_CONFIG }: { GRID_CONFIG: GridConfig }) {
+  const [clickedElements, setClickedElements] = useState<GridConfig>(
     GRID_CONFIG.map((row) => [...row])
   );
-  const [sequence, setSequence] = useState<numberArr[]>([]);
+  const [sequence, setSequence] = useState<Coordinate[]>([]);
   const [count, setCount] = useState<number>(0);
   const getSquareCounts = useMemo(
     () => GRID_CONFIG.flat().reduce((acc, ele) => acc + ele, 0),
@@ -14,28 +17,35 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
   );
 
   useEffect(() => {
-    let interval;
-    if (count === getSquareCounts) {
-      interval = setInterval(() => {
-        console.log(sequence, sequence.length);
-        if (sequence.length > 0) {
-          const resetGrid = clickedElements.map((row) => [...row]);
-          const updatedSequence = sequence.map((row) => [...row]);
+    if (count === getSquareCounts && sequence.length > 0) {
+      const interval = setInterval(() => {
+        setSequence((prevSequence) => {
+          const updatedSequence = [...prevSequence];
           const lastSquare = updatedSequence.pop();
-          if (lastSquare?.length === 2)
-            resetGrid[lastSquare[0]][lastSquare[1]] = 1;
-          setSequence(updatedSequence);
-          setClickedElements(resetGrid);
-        } else {
-          setCount(0);
-          clearInterval(interval);
-        }
-      }, 300);
+          if (lastSquare) {
+            setClickedElements((prevClickedElements) => {
+              const updatedGrid = prevClickedElements.map((row) => [...row]);
+              updatedGrid[lastSquare[0]][lastSquare[1]] = 1;
+              return updatedGrid;
+            });
+          }
+          if (updatedSequence.length === 0) {
+            clearInterval(interval);
+            setCount(0);
+          }
+          return updatedSequence;
+        });
+      }, DEACTIVATION_INTERVAL);
+
+      return () => clearInterval(interval);
     }
-  }, [clickedElements]);
+  }, [count, getSquareCounts, sequence]);
+
   const handleClick = (rowIdx: number, colIdx: number, e: React.MouseEvent) => {
     if (clickedElements[rowIdx][colIdx] === 2) {
-      console.log("Element Already Clicked");
+      alert("Element Already Clicked");
+    } else if (count === getSquareCounts) {
+      alert("Chill Out!");
     } else {
       const updatedGrid = clickedElements.map((row) => [...row]);
       const updatedSequence = sequence.map((row) => [...row]);
@@ -49,7 +59,7 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
   return (
     <div className="grid">
       {clickedElements &&
-        clickedElements.map((ele: numberArr, rowIndex: number) => {
+        clickedElements.map((ele: number[], rowIndex: number) => {
           return (
             <div className="grid-row" key={rowIndex}>
               {ele.map((val: number, colIndex: number) => {
@@ -58,9 +68,12 @@ function GridLight({ GRID_CONFIG }: { GRID_CONFIG: numberArr[] }) {
                     className={`grid-square ${val === 1 ? "green" : "brown"}`}
                     onClick={(e) => handleClick(rowIndex, colIndex, e)}
                     key={colIndex}
-                  ></div>
+                    role="button"
+                    aria-pressed={val === 2}
+                    tabIndex={0}
+                  />
                 ) : (
-                  <div className="hidden" key={colIndex}></div>
+                  <div className="hidden" key={colIndex} />
                 );
               })}
             </div>
